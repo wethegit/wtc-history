@@ -1,6 +1,39 @@
 
 /**
  * Class representing an abstraction of the history API.
+ * ## Install
+ * ```sh
+ * $ npm install wtc-history
+ * ```
+ * ## Usage
+ * Import it in your project.
+ * ```javascript
+ * import History from 'wtc-history';
+ * ```
+ * 
+ * The history class is a static class, so we call its methods directly on the class itself rather than instanciate it.
+ * First, however, we need to intialise the class:
+ * ```javascript
+ * History.init();
+ * ```
+ * 
+ * Then we can push history states to it:
+ * ```javascript
+ * History.push('/home'); // The URL is now http://domain.com/home
+ * History.push('/about'); // The URL is now http://domain.com/about
+ * History.push('/about/team'); // The URL is now http://domain.com/about/team
+ * ```
+ * 
+ * We can also push histroy states that contain a title
+ * ```javascript
+ * History.push('/work', 'Our Work'); // The URL is now http://domain.com/work and the page title is 'Our Work'
+ * ```
+ * 
+ * Finally, we can also push state data into the history stack. This session data is available using the property `History.currentState`
+ * ```javascript
+ * History.push('/admin', 'Admin section', {sessionID: 1234567}); // The URL is now http://domain.com/work and the page title is 'Our Work'
+ * ```
+ * 
  * @static
  * @namespace
  * @author Liam Egan <liam@wethecollective.com>
@@ -92,6 +125,8 @@ class History {
   static push(URL, title = '', stateObj = {}) {
 
     var parsedURL = '';
+
+    this.currentState = stateObj;
 
     // First try to fix the URL
     try {
@@ -233,6 +268,7 @@ class History {
     {
       try {
         state = (base = this.history).state || (base.state = e.state || (e.state = window.event.state));
+        this.currentState = e.state;
         return true;
       } catch (e) {
         console.log(e);
@@ -414,6 +450,20 @@ class History {
   }
   static get support() {
     return (window.history && window.history.pushState);
+  }
+
+  /**
+   * (getter/setter) The current state object allows the saving of an object
+   * that records state data for the current history state.
+   *
+   * @type {boolean}
+   */
+  static set currentState(value) {
+    // This overrides
+    this._currentState = value;
+  }
+  static get currentState() {
+    return this._currentState || {};
   }
 
   /**
