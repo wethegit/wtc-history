@@ -29,10 +29,29 @@
  * History.push('/work', 'Our Work'); // The URL is now http://domain.com/work and the page title is 'Our Work'
  * ```
  * 
- * Finally, we can also push state data into the history stack. This session data is available using the property `History.currentState`
+ * Finally, we can also push state data into the history stack. This session data is available using the property 
+ * `History.currentState`
  * ```javascript
  * History.push('/admin', 'Admin section', {sessionID: 1234567}); // The URL is now http://domain.com/work and the page title is 'Our Work'
  * ```
+ * 
+ * If you want to listen to the pop and push states of the History wrapper, just subscribe to `WTCHistory-pop` and `WTCHistory-push` on the document.
+ * For example:
+ * ```javascript
+ * document.addEventListener('WTCHistory-push', (e) => {
+ *  console.log(e.detail);
+ * });
+ * WTCHistory.push('/home', 'This is the Homepage', {testing: false});
+ * // This will log:
+ * // {
+ * //   historyStateURL: '/home',
+ * //   historyStateTitle: 'This is the Homepage',
+ * //   testing: false
+ * // }
+ * ```
+ * 
+ * The History object will work with native browser history interactions as well as with programmatic interactions, these
+ * can be easily triggered using `History.back()` and `History.forward()`
  * 
  * @static
  * @namespace
@@ -59,7 +78,6 @@ class History {
    * @param  {string} eventID   the event ID to emit
    * @param  {object} data = {} the data to include with the event
    */
-
   static emitEvent(eventID, data = {}) {
     if (window.CustomEvent) {
       var event = new CustomEvent(eventID, {detail: data});
@@ -138,6 +156,10 @@ class History {
       }
       return false
     }
+
+    // Create the state object with the provided state and the parsed URL and title
+    stateObj = Object.assign({}, stateObj, {historyStateURL: parsedURL, historyStateTitle: title});
+    this.emitEvent('WTCHistory-push', stateObj);
 
     // If we have API support, push the state to the history object
     if(this.support)
@@ -269,6 +291,7 @@ class History {
       try {
         state = (base = this.history).state || (base.state = e.state || (e.state = window.event.state));
         this.currentState = e.state;
+        this.emitEvent('WTCHistory-pop', e.state);
         return true;
       } catch (e) {
         console.log(e);
@@ -475,5 +498,35 @@ class History {
     return this.history.length;
   }
 }
+
+/**
+ * The history pop event. This fires when a state is popped from the history.
+ * This event is fired on the document element.
+ * 
+ * This will return the history's state object including the URL and title of the state that is current in the stack.
+ * 
+ * | Property | example | Description |
+ * | --- | --- | --- |
+ * | historyStateURL | `/home` | The parsed URL for the current state. If the history object is set up to do so, this will include the FQDN |
+ * | historyStateTitle | `Home` | The title passed to the history state |
+ * 
+ * @event History#WTCHistory-pop
+ * @type {object}
+ */
+
+/**
+ * The history push event. This fires when a state is pushed into the history.
+ * This event is fired on the document element.
+ * 
+ * This will return the history's state object including the URL and title of the state that is current in the stack.
+ * 
+ * | Property | example | Description |
+ * | --- | --- | --- |
+ * | historyStateURL | `/home` | The parsed URL for the current state. If the history object is set up to do so, this will include the FQDN |
+ * | historyStateTitle | `Home` | The title passed to the history state |
+ * 
+ * @event History#WTCHistory-push
+ * @type {object}
+ */
 
 export default History;
