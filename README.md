@@ -37,10 +37,29 @@ We can also push histroy states that contain a title
 History.push('/work', 'Our Work'); // The URL is now http://domain.com/work and the page title is 'Our Work'
 ```
 
-Finally, we can also push state data into the history stack. This session data is available using the property `History.currentState`
+Finally, we can also push state data into the history stack. This session data is available using the property 
+`History.currentState`
 ```javascript
 History.push('/admin', 'Admin section', {sessionID: 1234567}); // The URL is now http://domain.com/work and the page title is 'Our Work'
 ```
+
+If you want to listen to the pop and push states of the History wrapper, just subscribe to `WTCHistory-pop` and `WTCHistory-push` on the document.
+For example:
+```javascript
+document.addEventListener('WTCHistory-push', (e) => {
+ console.log(e.detail);
+});
+WTCHistory.push('/home', 'This is the Homepage', {testing: false});
+// This will log:
+// {
+//   historyStateURL: '/home',
+//   historyStateTitle: 'This is the Homepage',
+//   testing: false
+// }
+```
+
+The History object will work with native browser history interactions as well as with programmatic interactions, these
+can be easily triggered using `History.back()` and `History.forward()`
 
 
 
