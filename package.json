@@ -6,12 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx babel src/ --presets @babel/preset-env --out-dir build",
+    "minify-js": "npx uglifyjs build/wtc-history.js --compress --output dist/wtc-history.min.js",
     "prepublish": "npm run build",
+    "prepare": "npm run build && npx webpack --config webpack.config.js && npm run minify-js",
     "document": "./node_modules/doxdox/bin/doxdox src/wtc-history.js  --layout markdown --output README.md"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
+    "@babel/polyfill": "^7.4.4",
     "@babel/preset-env": "^7.2.3",
     "babel-loader": "^8.0.5",
     "doxdox": "^3.0.0",
